@@ -1,5 +1,7 @@
 ## Introduction
 
+![Alt text](https://github.com/hh72722/test1/blob/master/plot1.png?raw=true)
+
 It is now possible to collect a large amount of data about personal
 movement using activity monitoring devices such as a
 [Fitbit](http://www.fitbit.com), [Nike
