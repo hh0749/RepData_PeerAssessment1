@@ -1,0 +1,75 @@
+====================================
+Reproducible Research Assignment 1
+====================================
+
+##Get data into R
+```{r}
+filename <- unzip("activity.zip")
+activity <- read.csv(filename, stringsAsFactors = FALSE)
+activity$date<-as.Date(activity$date)
+```
+##What is mean total number of steps taken per day?
+```{r}
+activity_rm<-activity[which(!is.na(activity$steps)),]
+perday<-tapply(activity_rm$steps, activity_rm$date, sum)
+hist(perday,5, main = "Total number of steps taken per day", xlab = "")
+```
+
+##Summary stats
+```{r}
+summary(perday)
+```
+##What is the average daily activity pattern?
+```{r}
+library(ggplot2)
+library(plyr)
+meanday<-ddply(activity_rm, .(interval),function(x) mean(x$steps))
+colnames(meanday)[2] <- "Average_steps"
+plot(y=meanday$Average_steps,x=meanday$interval, type="l", xlab="5 minute interval", 
+     main="Daily activity pattern", ylab="Average number of steps")
+```
+##obtain max average steps
+```{r}
+meanday[which (meanday$Average_steps==max(meanday$Average_steps)),]
+```
+##Imputing missing values
+```{r}
+actnomissing<-activity
+meansteps<-tapply(activity_rm$steps, activity_rm$interval, mean)
+actnomissing[which(is.na(actnomissing$steps)),1]<-meansteps[as.character(actnomissing[which(is.na(actnomissing$steps)),3])]
+#Graph and compare
+perday2<-tapply(actnomissing$steps, actnomissing$date, sum)
+par(mfrow=c(1,2))
+hist(perday,5, main = "No data adjustment", xlab = "")
+hist(perday,5, main = "NA replaced with mean value", xlab = "")
+```
+
+##Summary stats for data with NA values
+```{r}
+summary(perday)
+```
+##Summary stats for data with NA values replaced with mean
+```{r}
+summary(perday2)
+```
+##Are there differences in activity patterns between weekdays and weekends?
+```{r}
+actnomissing$weekday<-as.character(weekdays(actnomissing$date, abbreviate = FALSE))
+actnomissing$wkday[actnomissing$weekday == "Monday"] <- "Weekday"
+actnomissing$wkday[actnomissing$weekday == "Tuesday"] <- "Weekday"
+actnomissing$wkday[actnomissing$weekday == "Wednesday"] <- "Weekday"
+actnomissing$wkday[actnomissing$weekday == "Thursday"] <- "Weekday"
+actnomissing$wkday[actnomissing$weekday == "Friday"] <- "Weekday"
+actnomissing$wkday[actnomissing$weekday == "Saturday"] <- "Weekend"
+actnomissing$wkday[actnomissing$weekday == "Sunday"] <- "Weekend"
+library(dplyr)
+weekday<-filter(actnomissing,wkday=="Weekday")
+weekend<-filter(actnomissing,wkday=="Weekend")
+weekdaymean<-tapply(weekday$steps, weekday$interval, mean)
+weekendmean<-tapply(weekend$steps, weekend$interval, mean)
+
+plot(y=weekdaymean,x=names(weekdaymean), type="l", xlab="5 minute interval", 
+     main="Weekday", ylab="Average number of steps")
+plot(y=weekendmean,x=names(weekendmean), type="l", xlab="5 minute interval", 
+     main="Weekend", ylab="Average number of steps")
+```
